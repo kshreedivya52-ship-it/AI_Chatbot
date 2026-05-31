@@ -1,20 +1,7 @@
-from dotenv import load_dotenv
-import streamlit as st
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-load_dotenv()
-
-# ─── Page Config ───────────────────────────────────────────────────────────────
-st.set_page_config(
-    page_title="FunnyBot",
-    page_icon="🤡",
-    layout="centered",
-)
-
-# ─── CSS Styling ───────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
+def load_css():
+    return """
+    <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
 /* ── Root Variables ── */
@@ -228,88 +215,5 @@ html, body, [data-testid="stAppViewContainer"] {
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-</style>
-""", unsafe_allow_html=True)
-
-# ─── Init Session State ─────────────────────────────────────────────────────────
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        SystemMessage(content="You are a funny assistant")
-    ]
-
-# ─── Header ────────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="chat-header">
-    <h1>🤡 FunnyBot</h1>
-    <p><span class="status-dot"></span>gemini-2.5-flash-lite · ready to roast</p>
-</div>
-<div class="chat-divider"><span>conversation start</span></div>
-""", unsafe_allow_html=True)
-
-# ─── Render existing chat history ──────────────────────────────────────────────
-for msg in st.session_state.messages:
-    if isinstance(msg, HumanMessage):
-        st.markdown(f"""
-        <div class="msg-row user">
-            <div class="bubble user">{msg.content}</div>
-            <div class="avatar user-av">🧑</div>
-        </div>
-        """, unsafe_allow_html=True)
-    elif isinstance(msg, AIMessage):
-        st.markdown(f"""
-        <div class="msg-row bot">
-            <div class="avatar bot-av">🤖</div>
-            <div class="bubble bot">{msg.content}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-# ─── Chat Input ─────────────────────────────────────────────────────────────────
-prompt = st.chat_input("Say something... or type 0 to clear chat")
-
-if prompt:
-    if prompt.strip() == "0":
-        st.session_state.messages = [
-            SystemMessage(content="You are a funny assistant")
-        ]
-        st.rerun()
-    else:
-        # Show user message
-        st.markdown(f"""
-        <div class="msg-row user">
-            <div class="bubble user">{prompt}</div>
-            <div class="avatar user-av">🧑</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.session_state.messages.append(HumanMessage(content=prompt))
-
-        # Thinking indicator
-        thinking_placeholder = st.empty()
-        thinking_placeholder.markdown("""
-        <div class="msg-row bot">
-            <div class="avatar bot-av">🤖</div>
-            <div class="thinking">
-                <div class="thinking-dot"></div>
-                <div class="thinking-dot"></div>
-                <div class="thinking-dot"></div>
-                &nbsp;thinking...
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Call Gemini
-        model = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.9)
-        response = model.invoke(st.session_state.messages)
-
-        thinking_placeholder.empty()
-
-        st.session_state.messages.append(AIMessage(content=response.content))
-
-        # Show bot response
-        st.markdown(f"""
-        <div class="msg-row bot">
-            <div class="avatar bot-av">🤖</div>
-            <div class="bubble bot">{response.content}</div>
-        </div>
-        """, unsafe_allow_html=True)
+ </style>
+    """
